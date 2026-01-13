@@ -1,0 +1,20 @@
+{
+  "projectPath": ":",
+  "classpaths": {
+    "test": [
+      "C:\\Users\\бухгалтер\\Desktop\\exc-lol\\AutoSprint\\build\\classes\\java\\test",
+      "C:\\Users\\бухгалтер\\Desktop\\exc-lol\\AutoSprint\\build\\resources\\test",
+      "C:\\Users\\бухгалтер\\Desktop\\exc-lol\\AutoSprint\\out\\production\\AutoSprint.test",
+      "C:\\Users\\бухгалтер\\Desktop\\exc-lol\\AutoSprint\\out\\test\\classes",
+      "C:\\Users\\бухгалтер\\Desktop\\exc-lol\\AutoSprint\\out\\test\\resources"
+    ],
+    "main": [
+      "C:\\Users\\бухгалтер\\Desktop\\exc-lol\\AutoSprint\\build\\classes\\java\\main",
+      "C:\\Users\\бухгалтер\\Desktop\\exc-lol\\AutoSprint\\build\\resources\\main",
+      "C:\\Users\\бухгалтер\\Desktop\\exc-lol\\AutoSprint\\build\\devlibs\\AutoSprint-2.3.9-dev.jar",
+      "C:\\Users\\бухгалтер\\Desktop\\exc-lol\\AutoSprint\\out\\production\\AutoSprint.main",
+      "C:\\Users\\бухгалтер\\Desktop\\exc-lol\\AutoSprint\\out\\production\\classes",
+      "C:\\Users\\бухгалтер\\Desktop\\exc-lol\\AutoSprint\\out\\production\\resources"
+    ]
+  }
+}

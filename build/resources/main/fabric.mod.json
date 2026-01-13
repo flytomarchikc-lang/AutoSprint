@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "autosprint",
+  "version": "2.3.9",
+  "name": "AutoSprint",
+  "description": "Automatically sprint when you move! No need to hold Ctrl anymore. Includes omni-directional sprint and water sprint!",
+  "authors": [
+    "flytomarchik"
+  ],
+  "contact": {
+    "homepage": "https://modrinth.com/mod/autosprinting",
+    "issues": "http://t.me/Flytomaru_twink_account",
+    "telegram": "http://t.me/Flytomaru_twink_account",
+    "email": "flytomarchik@gmail.com"
+  },
+  "license": "MIT",
+  "icon": "assets/autosprint/AutoSprintLogo.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "org.flytomarchik.autosprint.AutoSprintClient"
+    ]
+  },
+  "mixins": [
+    "autosprint.mixins.json"
+  ],
+  "custom": {
+    "modmenu:description": "modmenu.descriptionTranslation.AutoSprint"
+  },
+  "depends": {
+    "fabricloader": ">=0.15.11",
+    "minecraft": "~1.21.4",
+    "java": ">=21"
+  }
+}
