@@ -64,7 +64,7 @@ public class AutoSprintClient implements ClientModInitializer {
         blurKey = registerKey("key.autosprint.blur", GLFW.GLFW_KEY_UNKNOWN);
         resetGuiKey = registerKey("key.autosprint.reset", GLFW.GLFW_KEY_UNKNOWN);
 
-        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+        ClientTickEvents.END_CLIENT_TICK.register((MinecraftClient client) -> {
             if (masterKey.wasPressed()) {
                 sprintManager.toggleMaster();
                 playSound(client, configManager.getConfig().masterToggle);

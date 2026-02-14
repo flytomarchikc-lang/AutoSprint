@@ -27,6 +27,7 @@ public class AutoSprintScreen extends Screen {
     private final List<UIComponent> modules = new ArrayList<>();
 
     private float openAnim = 0;
+    private float ambientAnim = 0;
     private float scrollY = 0, targetScrollY = 0;
     private float themeScrollY = 0, targetThemeScrollY = 0;
     private float configScrollY = 0, targetConfigScrollY = 0;
@@ -115,6 +116,8 @@ public class AutoSprintScreen extends Screen {
             this.renderBackground(context, mouseX, mouseY, delta);
         }
 
+        ambientAnim += delta * 0.02f;
+
         openAnim = MathHelper.lerp(delta * 0.15f, openAnim, 1.0f);
 
         float c1 = 1.70158f;
@@ -129,11 +132,15 @@ public class AutoSprintScreen extends Screen {
         matrices.scale(scaleAnim, scaleAnim, 1f);
         matrices.translate(-width/2f, -height/2f, 0);
 
+        renderAmbientBackground(matrices, context, theme);
+
         if (openAnim > 0.05f) {
             renderThemePanel(matrices, context, mouseX, mouseY, delta, theme);
             renderMainPanel(matrices, context, mouseX, mouseY, delta, theme);
             renderConfigPanel(matrices, context, mouseX, mouseY, delta, theme);
         }
+
+        RenderUtils.renderRipples(matrices);
 
         matrices.pop();
 
@@ -143,6 +150,56 @@ public class AutoSprintScreen extends Screen {
         } else {
             deleteConfirmAnim = 0f;
         }
+    }
+
+    private void renderAmbientBackground(MatrixStack matrices, DrawContext context, ThemeManager.Theme theme) {
+        int topColor = RenderUtils.setAlpha(0x06080F, 235);
+        int bottomColor = RenderUtils.setAlpha(0x020204, 250);
+        RenderUtils.drawGradientRect(matrices, 0, 0, width, height, 0, topColor, bottomColor);
+
+        int gridColor = RenderUtils.setAlpha(theme.getAccent(), 22);
+        for (int gx = 0; gx < width; gx += 26) {
+            RenderUtils.drawRoundedRect(matrices, gx, 0, 1, height, 0, gridColor);
+        }
+        for (int gy = 0; gy < height; gy += 26) {
+            RenderUtils.drawRoundedRect(matrices, 0, gy, width, 1, 0, RenderUtils.setAlpha(theme.getAccent(), 16));
+        }
+
+        int glowSize = Math.min(width, height) / 2;
+        int leftX = (int) ((width * 0.1f) + Math.sin(ambientAnim * 2.1f) * 34f);
+        int leftY = (int) ((height * 0.3f) + Math.cos(ambientAnim * 1.8f) * 26f);
+        int rightX = (int) ((width * 0.86f) + Math.cos(ambientAnim * 2.4f) * 30f);
+        int rightY = (int) ((height * 0.75f) + Math.sin(ambientAnim * 2.0f) * 22f);
+
+        RenderUtils.drawGradientRect(matrices, leftX - glowSize / 2, leftY - glowSize / 2, glowSize, glowSize, glowSize / 2f,
+                RenderUtils.setAlpha(theme.getAccent(), 55), RenderUtils.setAlpha(theme.getAccent(), 0));
+        RenderUtils.drawGradientRect(matrices, rightX - glowSize / 2, rightY - glowSize / 2, glowSize, glowSize, glowSize / 2f,
+                RenderUtils.setAlpha(RenderUtils.addBrightness(theme.getAccent(), 55), 40), RenderUtils.setAlpha(0x000000, 0));
+
+        int watermarkX = width / 2 - 190;
+        int watermarkY = 12;
+        RenderUtils.drawRoundedRect(matrices, watermarkX, watermarkY, 330, 20, 5, RenderUtils.setAlpha(0x05070E, 220));
+        RenderUtils.drawGlowBorder(matrices, watermarkX, watermarkY, 330, 20, 5, 1.8f, RenderUtils.setAlpha(theme.getAccent(), 175));
+        context.drawText(textRenderer, "AUTOSPRINT.EXE  |  Build 2.3.9  |  Ghost Client UI", watermarkX + 8, watermarkY + 7, 0xFFE9ECF5, false);
+
+        RenderUtils.drawRoundedRect(matrices, watermarkX + 335, watermarkY, 42, 20, 5, RenderUtils.setAlpha(theme.getAccent(), 180));
+        context.drawCenteredTextWithShadow(textRenderer, "BETA", watermarkX + 356, watermarkY + 7, 0xFFFFFFFF);
+    }
+
+    private void drawPanelHeader(MatrixStack matrices, DrawContext context, int x, int y, int w, String title, String subtitle, String tag, ThemeManager.Theme theme) {
+        int headerHeight = 46;
+        RenderUtils.drawGradientRect(matrices, x + 1, y + 1, w - 2, headerHeight,
+                12, RenderUtils.setAlpha(0x11141D, 215), RenderUtils.setAlpha(theme.getAccent(), 70));
+        RenderUtils.drawRoundedRect(matrices, x + 10, y + 34, w - 20, 1, 1, RenderUtils.setAlpha(theme.getAccent(), 160));
+
+        RenderUtils.drawRoundedRect(matrices, x + 12, y + 10, 62, 15, 4, RenderUtils.setAlpha(theme.getAccent(), 150));
+        context.drawCenteredTextWithShadow(textRenderer, tag, x + 43, y + 14, 0xFFFFFFFF);
+
+        context.drawText(textRenderer, title, x + 78, y + 9, 0xFFFFFFFF, false);
+        matrices.push();
+        matrices.scale(0.8f, 0.8f, 1f);
+        context.drawText(textRenderer, subtitle, (int) ((x + 78) / 0.8f), (int) ((y + 27) / 0.8f), 0xFFB8BECA, false);
+        matrices.pop();
     }
 
     private void renderDeleteConfirmation(MatrixStack matrices, DrawContext context, int mouseX, int mouseY, ThemeManager.Theme theme) {
@@ -196,18 +253,18 @@ public class AutoSprintScreen extends Screen {
 
     private void renderThemePanel(MatrixStack matrices, DrawContext context, int mouseX, int mouseY, float delta, ThemeManager.Theme theme) {
         RenderUtils.drawGlassPanel(matrices, themeX, themeY, themeW, panelH, 12, theme.getTint(), theme.getAccent());
+        RenderUtils.drawRoundedRect(matrices, themeX + 6, themeY + 6, 26, 2, 1, RenderUtils.setAlpha(theme.getAccent(), 220));
+        RenderUtils.drawRoundedRect(matrices, themeX + themeW - 32, themeY + panelH - 8, 26, 2, 1, RenderUtils.setAlpha(theme.getAccent(), 170));
+        drawPanelHeader(matrices, context, themeX, themeY, themeW, translationManager.get("gui.theme"), "Visual presets", "STYLE", theme);
 
-        RenderUtils.drawRoundedRect(matrices, themeX, themeY, themeW, 30, 12, RenderUtils.setAlpha(theme.getAccent(), 50));
-        context.drawText(textRenderer, translationManager.get("gui.theme"), themeX + 15, themeY + 10, 0xFFFFFFFF, false);
-
-        context.enableScissor(themeX, themeY + 35, themeX + themeW, themeY + panelH - 10);
+        context.enableScissor(themeX, themeY + 47, themeX + themeW, themeY + panelH - 10);
         themeScrollY += (targetThemeScrollY - themeScrollY) * delta * 0.3f;
-        int y = themeY + 40 - (int)themeScrollY;
+        int y = themeY + 52 - (int)themeScrollY;
 
         for (Map.Entry<String, ThemeManager.Theme> entry : themeManager.getAllThemes().entrySet()) {
             boolean selected = entry.getValue().equals(theme);
             boolean hovered = isHovered(mouseX, mouseY, themeX + 10, y, themeW - 20, 28);
-            int bg = selected ? RenderUtils.setAlpha(theme.getAccent(), 100) : (hovered ? RenderUtils.setAlpha(0xFFFFFF, 30) : RenderUtils.setAlpha(0x000000, 30));
+            int bg = selected ? RenderUtils.setAlpha(theme.getAccent(), 100) : (hovered ? RenderUtils.setAlpha(0xFFFFFF, 30) : RenderUtils.setAlpha(0x0B0D12, 145));
             RenderUtils.drawRoundedRect(matrices, themeX + 10, y, themeW - 20, 28, 6, bg);
 
             if (selected) {
@@ -224,9 +281,9 @@ public class AutoSprintScreen extends Screen {
 
     private void renderMainPanel(MatrixStack matrices, DrawContext context, int mouseX, int mouseY, float delta, ThemeManager.Theme theme) {
         RenderUtils.drawGlassPanel(matrices, mainX, mainY, mainW, panelH, 12, theme.getTint(), theme.getAccent());
-
-        RenderUtils.drawRoundedRect(matrices, mainX, mainY, mainW, 30, 12, RenderUtils.setAlpha(theme.getAccent(), 50));
-        context.drawText(textRenderer, translationManager.get("gui.title"), mainX + 15, mainY + 10, 0xFFFFFFFF, false);
+        RenderUtils.drawRoundedRect(matrices, mainX + 6, mainY + 6, 36, 2, 1, RenderUtils.setAlpha(theme.getAccent(), 220));
+        RenderUtils.drawRoundedRect(matrices, mainX + mainW - 42, mainY + panelH - 8, 36, 2, 1, RenderUtils.setAlpha(theme.getAccent(), 170));
+        drawPanelHeader(matrices, context, mainX, mainY, mainW, translationManager.get("gui.title"), "Combat-grade movement modules", "MODULES", theme);
 
         if (isHovered(mouseX, mouseY, mainX + mainW - 25, mainY + 5, 20, 20)) {
             context.drawText(textRenderer, "⟲", mainX + mainW - 20, mainY + 10, 0xFFFFFFFF, false);
@@ -234,9 +291,9 @@ public class AutoSprintScreen extends Screen {
             context.drawText(textRenderer, "⟲", mainX + mainW - 20, mainY + 10, 0xFFAAAAAA, false);
         }
 
-        context.enableScissor(mainX, mainY + 35, mainX + mainW, mainY + panelH - 10);
+        context.enableScissor(mainX, mainY + 47, mainX + mainW, mainY + panelH - 10);
         scrollY += (targetScrollY - scrollY) * delta * 0.3f;
-        int y = mainY + 40 - (int)scrollY;
+        int y = mainY + 52 - (int)scrollY;
 
         for (UIComponent comp : modules) {
             comp.render(matrices, context, mainX + 10, y, mainW - 20, mouseX, mouseY, delta, 0, theme, translationManager);
@@ -248,17 +305,17 @@ public class AutoSprintScreen extends Screen {
 
     private void renderConfigPanel(MatrixStack matrices, DrawContext context, int mouseX, int mouseY, float delta, ThemeManager.Theme theme) {
         RenderUtils.drawGlassPanel(matrices, confX, confY, confW, panelH, 12, theme.getTint(), theme.getAccent());
+        RenderUtils.drawRoundedRect(matrices, confX + 6, confY + 6, 26, 2, 1, RenderUtils.setAlpha(theme.getAccent(), 220));
+        RenderUtils.drawRoundedRect(matrices, confX + confW - 32, confY + panelH - 8, 26, 2, 1, RenderUtils.setAlpha(theme.getAccent(), 170));
+        drawPanelHeader(matrices, context, confX, confY, confW, "Configs", "Slot management", "SLOTS", theme);
 
-        RenderUtils.drawRoundedRect(matrices, confX, confY, confW, 30, 12, RenderUtils.setAlpha(theme.getAccent(), 50));
-        context.drawText(textRenderer, "Configs", confX + 15, confY + 10, 0xFFFFFFFF, false);
-
-        int contentY = confY + 40;
+        int contentY = confY + 54;
 
         int inputW = confW - 45;
         int plusBtnX = confX + 10 + inputW + 5;
 
         boolean inputHover = isHovered(mouseX, mouseY, confX + 10, contentY, inputW, 20);
-        int inputColor = isTypingName ? RenderUtils.setAlpha(theme.getAccent(), 50) : (inputHover ? RenderUtils.setAlpha(0xFFFFFF, 30) : RenderUtils.setAlpha(0x000000, 50));
+        int inputColor = isTypingName ? RenderUtils.setAlpha(theme.getAccent(), 65) : (inputHover ? RenderUtils.setAlpha(0xFFFFFF, 30) : RenderUtils.setAlpha(0x000000, 50));
         RenderUtils.drawRoundedRect(matrices, confX + 10, contentY, inputW, 20, 5, inputColor);
 
         if (isTypingName) {
@@ -277,7 +334,7 @@ public class AutoSprintScreen extends Screen {
         context.drawCenteredTextWithShadow(textRenderer, "+", plusBtnX + 10, contentY + 6, 0xFFFFFFFF);
 
         contentY += 30;
-        context.drawText(textRenderer, "Files:", confX + 15, contentY, 0xFFAAAAAA, false);
+        context.drawText(textRenderer, "Profiles (legit/loadout):", confX + 15, contentY, 0xFFC2C8D0, false);
         contentY += 15;
 
         context.enableScissor(confX, contentY, confX + confW, confY + panelH - 10);
@@ -294,7 +351,7 @@ public class AutoSprintScreen extends Screen {
             ConfigManager.ConfigMetadata meta = configManager.getMetadata(cfgName);
             String dateStr = (meta != null) ? meta.getFormattedLastModified() : "Unknown";
 
-            int bg = isCurrent ? RenderUtils.setAlpha(theme.getAccent(), 70) : (itemHover ? RenderUtils.setAlpha(0xFFFFFF, 20) : RenderUtils.setAlpha(0x000000, 30));
+            int bg = isCurrent ? RenderUtils.setAlpha(theme.getAccent(), 82) : (itemHover ? RenderUtils.setAlpha(0xFFFFFF, 20) : RenderUtils.setAlpha(0x000000, 30));
             RenderUtils.drawRoundedRect(matrices, confX + 10, listY, confW - 20, CONFIG_ITEM_HEIGHT - 5, 5, bg);
 
             if (isCurrent) {
@@ -302,7 +359,7 @@ public class AutoSprintScreen extends Screen {
             }
 
             // Имя конфига
-            context.drawText(textRenderer, cfgName, confX + 15, listY + 5, isCurrent ? theme.getAccent() : 0xFFFFFFFF, false);
+            context.drawText(textRenderer, cfgName, confX + 15, listY + 5, isCurrent ? 0xFFFFFFFF : 0xFFE7E9ED, false);
 
             // === НОВОЕ: Дата изменения (серый, поменьше) ===
             matrices.push();
@@ -312,7 +369,7 @@ public class AutoSprintScreen extends Screen {
 
             // === НОВОЕ: Надпись ACTIVE ===
             if (isCurrent) {
-                String activeText = "[ACTIVE]";
+                String activeText = "[LOADED]";
                 int activeWidth = textRenderer.getWidth(activeText);
                 // Рисуем зеленым справа
                 matrices.push();
@@ -334,6 +391,12 @@ public class AutoSprintScreen extends Screen {
         }
 
         context.disableScissor();
+
+        String footer = "Slots: " + configs.size();
+        matrices.push();
+        matrices.scale(0.8f, 0.8f, 1f);
+        context.drawText(textRenderer, footer, (int) ((confX + confW - 10 - textRenderer.getWidth(footer)) / 0.8f), (int) ((confY + panelH - 12) / 0.8f), 0xFFA0A6B0, false);
+        matrices.pop();
     }
 
     @Override
@@ -369,7 +432,7 @@ public class AutoSprintScreen extends Screen {
             return true;
         }
 
-        int contentY = confY + 40;
+        int contentY = confY + 54;
         int inputW = confW - 45;
 
         isTypingName = isHovered(mouseX, mouseY, confX + 10, contentY, inputW, 20);
@@ -405,7 +468,7 @@ public class AutoSprintScreen extends Screen {
             return true;
         }
 
-        int listStartY = confY + 85;
+        int listStartY = confY + 99;
         if (isHovered(mouseX, mouseY, confX, listStartY, confW, panelH - 95)) {
             int currentY = listStartY - (int)configScrollY;
             List<String> configs = configManager.listConfigs();
@@ -439,16 +502,16 @@ public class AutoSprintScreen extends Screen {
             }
         }
 
-        if (isHovered(mouseX, mouseY, mainX, mainY + 35, mainW, panelH - 35)) {
-            int y = mainY + 40 - (int)scrollY;
+        if (isHovered(mouseX, mouseY, mainX, mainY + 47, mainW, panelH - 47)) {
+            int y = mainY + 52 - (int)scrollY;
             for (UIComponent comp : modules) {
                 if (comp.mouseClicked(mouseX, mouseY, mainX + 10, y, mainW - 20)) return true;
                 y += comp.getHeight() + 5;
             }
         }
 
-        if (isHovered(mouseX, mouseY, themeX, themeY + 35, themeW, panelH - 35)) {
-            int y = themeY + 40 - (int)themeScrollY;
+        if (isHovered(mouseX, mouseY, themeX, themeY + 47, themeW, panelH - 47)) {
+            int y = themeY + 52 - (int)themeScrollY;
             for (Map.Entry<String, ThemeManager.Theme> entry : themeManager.getAllThemes().entrySet()) {
                 if (mouseY >= y && mouseY <= y + 28) {
                     themeManager.setTheme(entry.getKey());
@@ -557,16 +620,16 @@ public class AutoSprintScreen extends Screen {
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontal, double vertical) {
         if (isHovered(mouseX, mouseY, themeX, themeY, themeW, panelH)) {
-            int max = Math.max(0, themeManager.getAllThemes().size() * 32 - (panelH - 50));
+            int max = Math.max(0, themeManager.getAllThemes().size() * 32 - (panelH - 62));
             targetThemeScrollY = MathHelper.clamp(targetThemeScrollY - (float)vertical * 20, 0, max);
         } else if (isHovered(mouseX, mouseY, mainX, mainY, mainW, panelH)) {
             int contentH = modules.stream().mapToInt(c -> c.getHeight() + 5).sum();
-            int max = Math.max(0, contentH - (panelH - 50));
+            int max = Math.max(0, contentH - (panelH - 62));
             targetScrollY = MathHelper.clamp(targetScrollY - (float)vertical * 20, 0, max);
         } else if (isHovered(mouseX, mouseY, confX, confY, confW, panelH)) {
             // Исправлен расчет высоты контента с новым размером элементов
             int contentH = configManager.listConfigs().size() * CONFIG_ITEM_HEIGHT;
-            int max = Math.max(0, contentH - (panelH - 95));
+            int max = Math.max(0, contentH - (panelH - 109));
             targetConfigScrollY = MathHelper.clamp(targetConfigScrollY - (float)vertical * 20, 0, max);
         }
         return true;
